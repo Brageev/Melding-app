@@ -1,3 +1,10 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+}
+
+
 .button {
     border: none;
     padding: 0.6em;
@@ -11,6 +18,7 @@
 }
 
 .chat-container {
+
     background: #ddd4d4;
     font-family: 'Roboto', sans-serif;
     border-radius: 0.5em;
@@ -19,6 +27,8 @@
     max-width: 37.5em;
     height: 37.5em;
     box-shadow: 0 0 1.25em 0.5em rgba(0, 0, 0, 0.1);
+    margin-top: 3em; 
+
 }
 
 .chat-messages {
@@ -92,3 +102,94 @@
     
 
 }
+
+
+
+.navbarli {
+    float: left;
+    padding-left: 90px;
+}
+
+.navbarli a {
+    display: block;
+    color: rgb(0, 0, 0);
+    text-align: center;
+    text-decoration: none; 
+    font-weight: bold;
+}
+
+.navbarli a:hover {
+    background-color: #111;
+}
+
+.navbar {
+    list-style-type: none;
+    overflow: hidden;
+    background-color: #cfcfcf;
+    border-radius: 5px;
+    font-size: 15px;
+    padding: 10px;
+    height: 10vh; /* Make the background go all the way to the bottom */
+    margin-top: 4em; /* Move the navbar down a bit */
+}
+
+.post-container {
+
+    background: #ddd4d4;
+    font-family: 'Roboto', sans-serif;
+    border-radius: 0.5em;
+    padding: 0.5em 1.25em;
+    margin: auto;
+    max-width: 37.5em;
+    height: 37.5em;
+    box-shadow: 0 0 1.25em 0.5em rgba(0, 0, 0, 0.1);
+    margin-top: 1em;
+    padding-top: 1.5em; 
+
+}
+
+.post-posts {
+
+    height: 60em;
+    overflow-y: scroll;
+    margin-bottom: 0.5em;
+}
+
+.post-posts::-webkit-scrollbar {
+    display: none;
+}
+
+.post {
+    padding: 0.625em;
+    padding-bottom: 2.625em;
+    border-radius: 1em;
+    margin-bottom: 0.625em;
+    display: flex;
+    flex-direction: column;
+    background: #f0f0f0;
+
+    
+}
+
+.post:hover {
+    background: #e2e2e2;
+}
+.post-sender {
+    font-weight: bold;
+    margin-bottom: 0.25em;
+}
+
+.post-text {
+    font-size: 1em;
+    margin-bottom: 0.31em;
+    word-wrap: break-word;
+    
+}
+
+.post-timestamp {
+    font-size: 0.75em;
+    text-align: right;
+    color: #220e0e;
+    
+}
+

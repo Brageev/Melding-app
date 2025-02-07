@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../style.css">
+    
+</head>
+<body>
+    
+    <div class="user-info" id ="user-info">
+        
+    </div>
+    <div class="chat-container" id="chat-container"> 
+        <div class="chat-messages" id="chat-messages">
+            <div class="message blue-bg">
+                <div class="message-sender">Brage</div>
+                <div class="message-text">Hei</div>
+                <div class="message-timestamp">10:00</div> 
+            </div>
+            <div class="message gray-bg">
+                <div class="message-sender">Ole</div>
+                <div class="message-text">Hei</div>
+                <div class="message-timestamp">10:00</div> 
+            </div>
+        </div>
+    <form id="message-input" class="chat-input-form">
+        <input type="text" class="chat-input" id="content" name="content" required placeholder="Skriv her...">
+        <button type="submit" class="button send-button">Send</button>
+    </form>
+    </div>
+
+    <ul id="navbar" class="navbar">
+
+    </ul>
+    <script src="../socket.io/socket.io.js"></script>
+    <script src="./index.js"></script>
+
+</body>
+</html>
