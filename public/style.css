@@ -148,17 +148,16 @@ body {
 
 }
 
-.post-posts {
 
-    height: 60em;
+.post-posts {
+    height: 37em;
     overflow-y: scroll;
     margin-bottom: 0.5em;
 }
 
-.post-posts::-webkit-scrollbar {
+.post-messages::-webkit-scrollbar {
     display: none;
 }
-
 .post {
     padding: 0.625em;
     padding-bottom: 2.625em;

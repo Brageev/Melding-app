@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../style.css">
+
+</head>
+<body>
+    <div class="user-info" id ="user-info">
+        
+    </div>
+    <div class="post-container" id="post-container"> 
+        <div class="post-posts" id="post-posts">
+                    <div class="post-sender"><%= post.sender %></div>
+                    <div class="post-text"><%= post.content %></div>
+                    <div class="post-timestamp"><%= post.time %></div> 
+        </div>
+    </div>
+
+
+
+
+    <ul id="navbar" class="navbar">
+        
+
+    </ul>
+    <script src="/socket.io/socket.io.js"></script>
+
+
+    <script src="/posts/index.js"></script>
+    
+</body>
+</html>

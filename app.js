@@ -6,8 +6,10 @@ const app = express()
 const session = require('express-session')
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3001
 const staticPath = path.join(__dirname, 'public');
+const viewsPath = path.join(__dirname, 'views');
+app.set('views', viewsPath);
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json()); 
 
@@ -28,16 +30,61 @@ app.get('/chat/', checkLoggedIn, (_, res) => {
         console.log('chat')
         res.sendFile(path.join(staticPath, '/chat/index.html'));
     });
+
+app.get('/getposts/', checkLoggedIn, (_, resp) => {
+    const sql = db.prepare('SELECT posts.id, posts.userId, posts.content, posts.time, users.username as username ' + 
+        'FROM posts ' +
+        'INNER JOIN users ON posts.userId = users.id');
+    let posts = sql.all().map(post => ({
+        id: post.id,
+        sender: post.username,
+        text: post.content,
+        timestamp: post.time
+    }));
+    resp.send(posts);
+});
+
+app.set('view engine', 'ejs');
+
 app.get('/posts/', checkLoggedIn, (_, res) => {
-        res.sendFile(path.join(staticPath, '/posts/index.html'));
-    });
+    const sql = db.prepare('SELECT posts.id, posts.userId, posts.content, posts.time, users.username as username ' + 
+        'FROM posts ' +
+        'INNER JOIN users ON posts.userId = users.id');
+    let posts = sql.all().map(post => ({
+        id: post.id,
+        sender: post.username,
+        text: post.content,
+        timestamp: post.time
+    }));
+    res.render('posts', { posts });
     
+});
+
+
+app.get('/post/:id', checkLoggedIn, (req, res) => {
+    const postId = parseInt(req.params.id);
+    const sql = db.prepare('SELECT posts.id, posts.userId, posts.content, posts.time, users.username as username ' + 
+        'FROM posts ' +
+        'INNER JOIN users ON posts.userId = users.id ' +
+        'WHERE posts.id = ?');
+    let post = sql.get(postId);
+    let postDetails = {
+        id: postId,
+        sender: post.username,
+        content: post.content,
+        time: post.time
+    };
+    res.render('post', { post: postDetails });
+});
+
+
+
+
+
 function checkLoggedIn(req, res, next) {
     if (req.session.loggedIn) {
-        console.log('Bruker logget inn:', req.session.user);
         return next();
     } else {
-        console.log('Bruker ikke logget inn');
         res.redirect('/login');
     }
 }
@@ -169,10 +216,11 @@ app.use((req, res, next) => {
     next();
 });
 
+
+
 app.get('/navbar', (req, res) => {
     res.send(res.locals.navbar);
 });
-
 
 
 

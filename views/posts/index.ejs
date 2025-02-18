@@ -11,28 +11,28 @@
     <div class="user-info" id ="user-info">
         
     </div>
-
     <div class="post-container" id="post-container"> 
         <div class="post-posts" id="post-posts">
-            <div class="post">
-                <div class="post-sender">Brage</div>
-                <div class="post-text">Hei</div>
-                <div class="post-timestamp">10:00</div> 
-            </div>
-            <div class="post">
-                <div class="post-sender">Ole</div>
-                <div class="post-text">Hei</div>
-                <div class="post-timestamp">10:00</div> 
-            </div>
+            <% posts.forEach(post => { %>
+                <div class="post" id="<%= post.id %>">
+                    <div class="post-sender"><%= post.sender %></div>
+                    <div class="post-text"><%= post.text %></div>
+                    <div class="post-timestamp"><%= post.timestamp %></div> 
+                </div>
+            <% }) %>
         </div>
     </div>
 
 
 
+
     <ul id="navbar" class="navbar">
+        
 
     </ul>
-    <script src="../socket.io/socket.io.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
     <script src="./index.js"></script>
+    
 </body>
 </html>
