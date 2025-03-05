@@ -82,15 +82,13 @@ body {
     gap: 0.625em;
 
 }
-.chat-input{
+.chat-input {
     padding: 0.625em;
     border: none;
     border-radius: 0.5em;
-    background-color: f5f5f5;
+    background-color: #f5f5f5;
     font-size: 1em;
     flex-grow: 1;
-
-
 }
 
 
@@ -132,7 +130,6 @@ body {
     height: 10vh; /* Make the background go all the way to the bottom */
     margin-top: 4em; /* Move the navbar down a bit */
 }
-
 .post-container {
 
     background: #ddd4d4;

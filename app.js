@@ -4,14 +4,19 @@ const path = require('path')
 const express = require('express')
 const app = express()
 const session = require('express-session')
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
 const PORT = process.env.PORT || 3001
+const bcrypt = require('bcrypt')
 const staticPath = path.join(__dirname, 'public');
 const viewsPath = path.join(__dirname, 'views');
 app.set('views', viewsPath);
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json()); 
+
+
+setInterval(() => {
+    const sql = db.prepare('DELETE FROM messages WHERE time < datetime(\'now\', \'-1 hour\')');
+    sql.run();
+}, 1000 * 60 * 60);
 
 
 sessionMiddleware = session({
