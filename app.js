@@ -4,13 +4,16 @@ const path = require('path')
 const express = require('express')
 const app = express()
 const session = require('express-session')
-const PORT = process.env.PORT || 80
+const PORT = process.env.PORT || 2000
 const bcrypt = require('bcrypt')
 const staticPath = path.join(__dirname, 'public');
 const viewsPath = path.join(__dirname, 'views');
 app.set('views', viewsPath);
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json()); 
+const saltRounds = 10;
+
+
 
 
 setInterval(() => {
