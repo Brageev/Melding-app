@@ -4,7 +4,7 @@ const path = require('path')
 const express = require('express')
 const app = express()
 const session = require('express-session')
-const PORT = process.env.PORT || 80
+const PORT = process.env.PORT || 3000
 const bcrypt = require('bcrypt')
 const staticPath = path.join(__dirname, 'public');
 const viewsPath = path.join(__dirname, 'views');
@@ -12,8 +12,13 @@ app.set('views', viewsPath);
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json()); 
 const saltRounds = 10;
+const { RateLimiterMemory } = require('rate-limiter-flexible');
 
-
+const rateLimiter = new RateLimiterMemory(
+    {
+      points: 5, // 5 points
+      duration: 1, // per second
+    });
 
 
 setInterval(() => {
@@ -38,7 +43,10 @@ app.get('/chat/', checkLoggedIn, (_, res) => {
         console.log('chat')
         res.sendFile(path.join(staticPath, '/chat/index.html'));
     });
-
+app.get('/createpost/', checkLoggedIn, (_, res) => {
+        console.log('createpost')
+        res.sendFile(path.join(staticPath, '/createpost/index.html'));
+    });
 app.get('/getposts/', checkLoggedIn, (_, resp) => {
     const sql = db.prepare('SELECT posts.id, posts.userId, posts.content, posts.time, users.username as username ' + 
         'FROM posts ' +
@@ -112,14 +120,20 @@ function addMessage(userId, content, time) {
     return rows[0]
 };
 
-app.get('/getmessages/', checkLoggedIn,  (_, resp) => {
+app.get('/getmessages/', checkLoggedIn, (req, resp) => {
     console.log('/getmessages/')
 
-    const sql = db.prepare('SELECT messages.id, messages.id, messages.userId, messages.content, messages.time, users.username as username ' + 
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const offset = (page - 1) * pageSize;
+
+    const sql = db.prepare('SELECT messages.id, messages.userId, messages.content, messages.time, users.username as username ' + 
         'FROM messages ' +
-        'INNER JOIN users ON messages.userId = users.id');
-    let messages = sql.all()
-    resp.send(messages)
+        'INNER JOIN users ON messages.userId = users.id ' +
+        'ORDER BY messages.id DESC ' + 
+        'LIMIT ? OFFSET ?');
+    let messages = sql.all(pageSize, offset);
+    resp.send(messages);
 });
 
 app.get('/getuser/', checkLoggedIn,  (req, resp) => {
@@ -218,7 +232,7 @@ app.use((req, res, next) => {
         <li class='navbarli'><a href="/home/">Home</a></li>
         <li class='navbarli'><a href="/chat/">Chat</a></li>
         <li class='navbarli'><a href="/posts/">Posts</a></li>
-        <li class='navbarli'><a href="/historikk/">New post</a></li>
+        <li class='navbarli'><a href="/createpost/">New post</a></li>
         ${req.session.loggedIn && req.session.user.isAdmin ? '<li><a href="/admin/">Admin</a></li>' : ''}
     `;
     next();
@@ -243,6 +257,7 @@ io.on('connection', onConnection);
 io.engine.use(sessionMiddleware);
 
 function onConnection(socket) {
+    
     const session = socket.request.session;
     
     if (!session || !session.loggedIn) {
@@ -262,17 +277,25 @@ function onConnection(socket) {
     console.log('user:', session.user); 
 
     //får melding fra klient og sender videre til alle klienter
-    socket.on('message', (data, time) => {
-        console.log('Received message:', data);
-        
-        const messageAdd = addMessage(session.user.id, data, time);
-        const messageSend = {
-            id: messageAdd.id,
-            userId: messageAdd.userId,
-            username: session.user.username,
-            content: messageAdd.content,
-            time: messageAdd.time
+    
+    socket.on('message', async (data) => {
+        try {
+            await rateLimiter.consume(socket.id);
+            console.log('Received message:', data);
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+            const messageAdd = addMessage(session.user.id, data, time);
+            const messageSend = {
+                id: messageAdd.id,
+                userId: messageAdd.userId,
+                username: session.user.username,
+                content: messageAdd.content,
+                time: messageAdd.time
+            };
+            socket.broadcast.emit('chat-message', messageSend);
+        } catch (rejRes) {
+            console.log("Rate limit reached");
+            socket.emit('rate-limit', { message: 'You are sending messages too fast. Please slow down.' });
+            return;
         }
-        socket.broadcast.emit('chat-message', messageSend);
     });
 }

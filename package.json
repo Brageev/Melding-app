@@ -9,6 +9,7 @@
     "express-ws": "^5.0.2",
     "nodejs": "^0.0.0",
     "path": "^0.12.7",
+    "rate-limiter-flexible": "^5.0.5",
     "socket.io": "^4.8.1",
     "sqlite3": "^5.1.7",
     "ws": "^8.18.0"
