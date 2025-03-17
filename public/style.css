@@ -1,15 +1,66 @@
-
-
 html, body {
+    height: 100%;
     margin: 0;
     font-family: 'Roboto', sans-serif;
     scrollbar-width: none;
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    flex-grow: 1;
 }
 
+.container-createpost {
+    display: grid;
+    grid-template-areas:
+      "sidebar-container post-input"
+      "navbar-container navbar-container";
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: 1fr min-content;    
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.container-chat {
+    display: grid;
+    grid-template-areas:
+      "sidebar-container chat-container"
+      "navbar-container navbar-container";
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: 1fr min-content;    
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.chat-container {
+    grid-area: chat-container;
+    background: #383838;
+    padding: 1em 1.25em;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    justify-content: space-between; 
+    
+}
+.post-input {
+    grid-area: post-input;
+    overflow-y: auto;
+}
+.sidebar-container {
+    grid-area: sidebar-container;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.chat-container {
+    grid-area: chat-container;
+    background: #383838;
+    padding: 1em 1.25em;
+    display: flex;
+    overflow-y: auto;
+}
+
+.navbar-container {
+    grid-area: navbar-container;
+}
 
 ::-webkit-scrollbar {
     width: 0px;
@@ -21,34 +72,18 @@ html, body {
     padding: 0.6em;
     border-radius: 0.5em;
     cursor: pointer;
-
 }
 
 .button:active {
     transform: translateY(2px);
 }
 
-.chat-container {
-
-    background: #383838;
-    font-family: 'Roboto', sans-serif;
-    padding: 1em 1.25em;
-    flex-grow: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-  
-
-}
-
-
 .chat-messages {
-    flex-grow: 1;
-    overflow-y: scroll;
+    overflow-y: auto;
     scrollbar-width: none;
     margin-bottom: 0.5em;
+    
 }
-
 
 .message {
     padding: 0.625em;
@@ -56,7 +91,6 @@ html, body {
     display: flex;
     flex-direction: column;
     color: #cfcfcf;
-    
 }
 
 .message-sender {
@@ -78,16 +112,31 @@ html, body {
 .blue-bg {
     background: #4b4b4b;
 }
+
 .gray-bg {
-    background: #5f5f5f;
+    background: #f0f0f0;
 }
 
 .chat-input-form {
     display: flex;
     align-items: center;
-
 }
-.chat-input {
+.post-input-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    height: 100%;
+}
+.chat-form {
+    padding: 0.625em;
+    border: none;
+    background-color: #4b4b4b;
+    color: #ffffff;
+    font-size: 1em;
+    flex-grow: 1;
+}
+.post-form {
     padding: 0.625em;
     border: none;
     background-color: #4b4b4b;
@@ -103,11 +152,7 @@ html, body {
     font-size: 1em;
     font-weight: bold;
     border-radius: 0px;
-    
-
 }
-
-
 
 .navbarli {
     float: left;
@@ -116,7 +161,7 @@ html, body {
 
 .navbarli a {
     display: block;
-    color:#cfcfcf;
+    color: #cfcfcf;
     text-align: center;
     text-decoration: none; 
     font-weight: bold;
@@ -132,27 +177,22 @@ html, body {
     background-color: #242424;
     font-size: 15px;
     padding: 20px;
-    margin-top: 0px;
-    margin-bottom: 0px;
+    margin: 0;
 }
+
 .post-container {
-
-    background: #5d5d5d;
-    font-family: 'Roboto', sans-serif;
-    border-radius: 0.5em;
-    padding: 0.5em 1.25em;
-    margin: auto;
-    max-width: 37.5em;
-    height: 37.5em;
-    box-shadow: 0 0 1.25em 0.5em rgba(0, 0, 0, 0.1);
-    padding-top: 1.5em; 
-
+    grid-area: chat-container;
+    background: #383838;
+    padding: 1em 1.25em;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    justify-content: space-between;
 }
-
 
 .post-posts {
-    height: 37em;
-    overflow-y: scroll;
+    flex-grow: 1;
+    overflow-y: auto;
     margin-bottom: 0.5em;
     scrollbar-width: none;
 }
@@ -165,13 +205,12 @@ html, body {
     display: flex;
     flex-direction: column;
     background: #f0f0f0;
-
-    
 }
 
 .post:hover {
     background: #e2e2e2;
 }
+
 .post-sender {
     font-weight: bold;
     margin-bottom: 0.25em;
@@ -181,13 +220,22 @@ html, body {
     font-size: 1em;
     margin-bottom: 0.31em;
     word-wrap: break-word;
-    
 }
 
 .post-timestamp {
     font-size: 0.75em;
     text-align: right;
     color: #220e0e;
-    
 }
+
+
+
+
+
+
+
+
+
+
+
 

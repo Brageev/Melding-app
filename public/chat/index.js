@@ -1,7 +1,7 @@
 const socket = io();
 const clientsTotal = document.getElementById('client-total');
 const messageContainer = document.getElementById('chat-messages');
-const messageForm = document.getElementById('message-input');
+const messageForm = document.getElementById('chat-input-form');
 const messageInput = document.getElementById('content');
 const userInfo = document.getElementById('user-info');
 messageContainer.innerHTML = '';
@@ -53,7 +53,6 @@ socket.on('rate-limit', (data) => {
     messageForm.querySelector('button').disabled = true;
     setTimeout(() => {
         document.body.removeChild(alertBox);
-        // Re-enable the message input form
         messageInput.disabled = false;
         messageForm.querySelector('button').disabled = false;
     }, 5000);

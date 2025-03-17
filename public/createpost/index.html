@@ -8,24 +8,32 @@
     
 </head>
 <body>
-    
     <div class="user-info" id ="user-info">
+            
         
         
     </div>
-    <div class="chat-container" id="chat-container"> 
-        <div class="chat-messages" id="chat-messages">
+    <div class="container-createpost">
+        
+        <div class="sidebar-container" id="sidebar-container">
+
+            siebar
+        </div>
+        <div class="post-input" id="post-input"> 
+            
+            <form id="post-input-form" class="post-input-form">
+                <input type="text" class="post-form" id="content" name="content" required placeholder="Skriv her..." autocomplete="off">
+                <button type="submit" class="button send-button">Send</button>
+            </form>
             
         </div>
-    <form id="message-input" class="chat-input-form">
-        <input type="text" class="chat-input" id="content" name="content" required placeholder="Skriv her..." autocomplete="off">
-        <button type="submit" class="button send-button">Send</button>
-    </form>
+        <div class="navbar-container">
+            
+            <ul id="navbar" class="navbar">
+
+            </ul>
+        </div>
     </div>
-
-    <ul id="navbar" class="navbar">
-
-    </ul>
     <script src="../socket.io/socket.io.js"></script>
     <script src="./index.js"></script>
 
