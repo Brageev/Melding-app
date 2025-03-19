@@ -8,27 +8,34 @@
 
 </head>
 <body>
-    <div class="user-info" id ="user-info">
-        
-    </div>
-    <div class="post-container" id="post-container"> 
-        <div class="post-posts" id="post-posts">
-                    <div class="post-sender"><%= post.sender %></div>
-                    <div class="post-text"><%= post.content %></div>
-                    <div class="post-timestamp"><%= post.time %></div> 
+    <div class="container-post">
+        <div class="sidebar-container" id="sidebar-container">
+            <div class="user-info" id ="user-info">
+
+            </div>
+        </div>
+        <div class="post-container" id="post-container"> 
+            <div class="post-posts" id="post-posts">
+                <div class ="post">
+                        <div class="post-sender"><%= post.sender %></div>
+                        <div class="post-text"><%= post.content %></div>
+                        <div class="post-timestamp"><%= new Date(post.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) %></div> 
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="navbar-container">
+            <ul id="navbar" class="navbar">
+                
+
+            </ul>
         </div>
     </div>
 
 
-
-
-    <ul id="navbar" class="navbar">
-        
-
-    </ul>
     <script src="/socket.io/socket.io.js"></script>
-
-
     <script src="/posts/index.js"></script>
     
 </body>

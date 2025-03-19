@@ -9,19 +9,39 @@ const userData = {};
 let isLoading = false;
 let page = 1;
 const pageSize = 20;
-
+function escape_html(content) {
+    return content.replace(/[&<>"'\/]/g, (char) => {
+        switch (char) {
+        case '&':
+            return '&amp;';
+        case '<':
+            return '&lt;';
+        case '>':
+            return '&gt;';
+        case '"':
+            return '&quot;';
+        case '\\':
+            return '&#39;';
+        case '/':
+            return '&#x2F;';
+        default:
+            return char;
+        }
+    });
+}
 
 messageForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const message = messageInput.value;
+    const str = escape_html(message);
     socket.emit('message', message);
     messageInput.value = '';
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const time = new Date();
 
     showMessages(
         [{
             username: userData.username,
-            content: message,
+            content: str,
             time: time
         }]
     );
@@ -83,27 +103,23 @@ async function fetchMessages(messageContainer, page = 0, pageSize = 20) {
     try {
         let response = await fetch(`/getmessages/?page=${page}&pageSize=${pageSize}`);
         let data = await response.json();
-        console.log(data);
-
-    
-
         const currentScrollHeight = messageContainer.scrollHeight;
         const currentScrollTop = messageContainer.scrollTop;
 
         const fragment = document.createDocumentFragment();
         data.reverse().forEach((message) => {
             const messageElement = document.createElement('div');
+            const messageTime = new Date(message.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
             messageElement.classList.add('message');
             messageElement.classList.add(message.username === userData.username ? 'blue-bg' : 'gray-bg');
             messageElement.innerHTML = `
                 <div class="message-sender">${message.username}</div>
                 <div class="message-text">${message.content}</div>
-                <div class="message-timestamp">${message.time}</div>
+                <div class="message-timestamp">${messageTime}</div>
             `;
             fragment.appendChild(messageElement);
         });
         messageContainer.insertBefore(fragment, messageContainer.firstChild);
-
 
         messageContainer.scrollTop = messageContainer.scrollHeight - currentScrollHeight + currentScrollTop;
 
@@ -122,22 +138,26 @@ function showUserInfo(user) {
     </div>`;
 }
 
+
 function showMessages(messages) {
     const fragment = document.createDocumentFragment();
+    const currentScrollHeight = messageContainer.scrollHeight;
+    const currentScrollTop = messageContainer.scrollTop;
     messages.forEach((message) => {
+        console.log(message);
+        const messageTime = new Date(message.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
         messageElement.classList.add(message.username === userData.username ? 'blue-bg' : 'gray-bg');
         messageElement.innerHTML = `
-
             <div class="message-sender">${message.username}</div>
             <div class="message-text">${message.content}</div>
-            <div class="message-timestamp">${message.time}</div>
+            <div class="message-timestamp">${messageTime}</div>
         `;
         fragment.appendChild(messageElement);
     });
     messageContainer.appendChild(fragment);
-    messageContainer.scrollTop = messageContainer.scrollHeight;
+    messageContainer.scrollTop = messageContainer.scrollHeight - currentScrollHeight + currentScrollTop;
 }
 
 async function fetchNavbar() {

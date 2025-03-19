@@ -2,15 +2,6 @@ const postInput = document.getElementById('content');
 const socket = io();
 
 
-document.getElementById('post-input-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const post = postInput.value;
-    socket.emit('post', post);
-    postInput.value = '';
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-
-   
-    })
 
 
 

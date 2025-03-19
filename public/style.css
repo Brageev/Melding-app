@@ -29,6 +29,28 @@ html, body {
     overflow: hidden;
 }
 
+.container-posts {
+    display: grid;
+    grid-template-areas:
+      "sidebar-container chat-container"
+      "navbar-container navbar-container";
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: 1fr min-content;    
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.container-post {
+    display: grid;
+    grid-template-areas:
+      "sidebar-container chat-container"
+      "navbar-container navbar-container";
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: 1fr min-content;    
+    flex-grow: 1;
+    overflow: hidden;
+}
+
 .chat-container {
     grid-area: chat-container;
     background: #383838;
@@ -114,7 +136,7 @@ html, body {
 }
 
 .gray-bg {
-    background: #f0f0f0;
+    background: #5e5e5e;
 }
 
 .chat-input-form {
@@ -188,6 +210,8 @@ html, body {
     flex-direction: column;
     overflow-y: auto;
     justify-content: space-between;
+    color: #cfcfcf;
+
 }
 
 .post-posts {
@@ -195,6 +219,7 @@ html, body {
     overflow-y: auto;
     margin-bottom: 0.5em;
     scrollbar-width: none;
+    
 }
 
 .post {
@@ -204,11 +229,12 @@ html, body {
     margin-bottom: 0.625em;
     display: flex;
     flex-direction: column;
-    background: #f0f0f0;
+    background: #4b4b4b;
+    color: #cfcfcf;
 }
 
 .post:hover {
-    background: #e2e2e2;
+    background: #5e5e5e;;
 }
 
 .post-sender {
@@ -225,7 +251,6 @@ html, body {
 .post-timestamp {
     font-size: 0.75em;
     text-align: right;
-    color: #220e0e;
 }
 
 

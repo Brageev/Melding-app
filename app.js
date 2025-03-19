@@ -17,7 +17,7 @@ const { RateLimiterMemory } = require('rate-limiter-flexible');
 const rateLimiter = new RateLimiterMemory(
     {
       points: 5, // 5 points
-      duration: 1, // per second
+      duration: 3, // per second
     });
 
 
@@ -95,7 +95,26 @@ app.get('/post/:id', checkLoggedIn, (req, res) => {
 
 
 
-
+function escape_html(content) {
+    return content.replace(/[&<>"'\/]/g, (char) => {
+        switch (char) {
+        case '&':
+            return '&amp;';
+        case '<':
+            return '&lt;';
+        case '>':
+            return '&gt;';
+        case '"':
+            return '&quot;';
+        case '\\':
+            return '&#39;';
+        case '/':
+            return '&#x2F;';
+        default:
+            return char;
+        }
+    });
+}
 
 function checkLoggedIn(req, res, next) {
     if (req.session.loggedIn) {
@@ -106,10 +125,13 @@ function checkLoggedIn(req, res, next) {
 }
 
 function addMessage(userId, content, time) {
-    console.log("THE THINGS: ", userId, content, time);
+    
+    str = escape_html(content);
+    console.log("THE THINGS: ", userId, str, time);
     sql = db.prepare("INSERT INTO messages (userId, content, time) " +
                          "values (?, ?, ?)");
-    const info = sql.run(userId, content, time)
+                         
+    const info = sql.run(userId, str, time)
     
     sql = db.prepare('SELECT messages.id, messages.userId, messages.content, messages.time, users.username as username ' + 
         'FROM messages ' +
@@ -119,6 +141,15 @@ function addMessage(userId, content, time) {
 
     return rows[0]
 };
+
+function addPost(userId, content, time) {
+    const sql = db.prepare("INSERT INTO posts (userId, content, time) " +
+                         "values (?, ?, ?)");
+    const info = sql.run(userId, content, time);
+    const row = db.prepare('SELECT * FROM posts WHERE id = ?').get(info.lastInsertRowid);
+    console.log('row inserted', row);
+    return row;
+}
 
 app.get('/getmessages/', checkLoggedIn, (req, resp) => {
     console.log('/getmessages/')
@@ -193,6 +224,23 @@ function checkEmailExists(email) {
     return false;
 
 }
+
+
+app.post('/createpost', async (req, res) => {
+    const { content } = req.body;
+    const user = req.session.user;
+    console.log('user real:', req.session.user);
+    const time = Date.now();
+    console.log('Received post:', content);
+    addPost(user.id, content, time);
+    res.redirect('/posts/');
+}
+);
+
+
+
+
+
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     
@@ -280,9 +328,15 @@ function onConnection(socket) {
     
     socket.on('message', async (data) => {
         try {
+            
             await rateLimiter.consume(socket.id);
-            console.log('Received message:', data);
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+            str = escape_html(data);
+
+            console.log('Received message:', str);
+            
+            const time = Date.now();
+            console.log('Time:', Date.now());
+            console.log('Time:', time);
             const messageAdd = addMessage(session.user.id, data, time);
             const messageSend = {
                 id: messageAdd.id,

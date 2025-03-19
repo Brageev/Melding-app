@@ -8,28 +8,36 @@
 
 </head>
 <body>
-    <div class="user-info" id ="user-info">
-        
-    </div>
-    <div class="post-container" id="post-container"> 
-        <div class="post-posts" id="post-posts">
-            <% posts.forEach(post => { %>
-                <div class="post" id="<%= post.id %>">
-                    <div class="post-sender"><%= post.sender %></div>
-                    <div class="post-text"><%= post.text %></div>
-                    <div class="post-timestamp"><%= post.timestamp %></div> 
-                </div>
-            <% }) %>
+    <div class="container-posts">
+        <div class="sidebar-container" id ="sidebar-container">
+            sidebar-container
+            <div class="user-info" id ="user-info">
+
+            </div>
+        </div>
+        <div class="post-container" id="post-container"> 
+            <div class="post-posts" id="post-posts">
+                <% posts.forEach(post => { %>
+                    <div class="post" id="<%= post.id %>">
+                        <div class="post-sender"><%= post.sender %></div>
+                        <div class="post-text"><%= post.text %></div>
+                        <div class="post-timestamp"><%= new Date(post.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) %></div> 
+                    </div>
+                    
+                <% }) %>
+            </div>
+        </div>
+
+
+
+        <div class="navbar-container">
+            <ul id="navbar" class="navbar">
+                
+                
+
+            </ul>
         </div>
     </div>
-
-
-
-
-    <ul id="navbar" class="navbar">
-        
-
-    </ul>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="./index.js"></script>

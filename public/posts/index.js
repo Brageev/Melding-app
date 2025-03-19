@@ -5,10 +5,12 @@ const userData = {};
 document.addEventListener('DOMContentLoaded', (event) => {
     const posts = document.querySelectorAll('.post');
     posts.forEach(post => {
-        post.addEventListener('click', () => {
-            console.log(post.id);
-            window.location.href = `/post/${post.id}`;
-        });
+        if (post.id) {
+            post.addEventListener('click', () => {
+                console.log(post.id);
+                window.location.href = `/post/${post.id}`;
+            });
+        }
     });
 });
 
