@@ -1,10 +1,32 @@
-const sqlite3 = require('better-sqlite3')
-const db = sqlite3('./database.db', {verbose: console.log})
+const sql = require('mssql');
+
+const config = {
+    user: 'Brage',
+    password: 'Passord01',
+    server: 'meldingserver.database.windows.net',
+    database: 'meldingdb',
+    options: {
+        encrypt: true, // Required for Azure
+        enableArithAbort: true
+    }
+};
+
+async function connectDB() {
+    try {
+        await sql.connect(config);
+        console.log("Connected to Azure SQL Database");
+    } catch (err) {
+        console.error("Database connection failed: ", err);
+    }
+}
+
+connectDB();
+
 const path = require('path')
 const express = require('express')
 const app = express()
 const session = require('express-session')
-const PORT = process.env.PORT || 80
+const PORT = process.env.PORT || 3001
 const bcrypt = require('bcrypt')
 const staticPath = path.join(__dirname, 'public');
 const viewsPath = path.join(__dirname, 'views');
@@ -20,12 +42,13 @@ const rateLimiter = new RateLimiterMemory(
       duration: 3, // per second
     });
 
-
-setInterval(() => {
-    const sql = db.prepare('DELETE FROM messages WHERE time < datetime(\'now\', \'-1 hour\')');
-    sql.run();
+setInterval(async () => {
+    try {
+        await sql.query`DELETE FROM messages WHERE timeSendt < DATEADD(hour, -1, GETDATE())`;
+    } catch (err) {
+        console.error("Failed to delete old messages: ", err);
+    }
 }, 1000 * 60 * 60);
-
 
 sessionMiddleware = session({
     secret: 'hemmelig_nøkkel',
@@ -37,63 +60,74 @@ sessionMiddleware = session({
 app.use(sessionMiddleware);
 
 app.get('/', checkLoggedIn, (_, res) => {
-        res.sendFile(path.join(staticPath, '/home/index.html'));
-    });
+    res.sendFile(path.join(staticPath, '/home/index.html'));
+});
 app.get('/chat/', checkLoggedIn, (_, res) => {
-        console.log('chat')
-        res.sendFile(path.join(staticPath, '/chat/index.html'));
-    });
+    console.log('chat')
+    res.sendFile(path.join(staticPath, '/chat/index.html'));
+});
 app.get('/createpost/', checkLoggedIn, (_, res) => {
-        console.log('createpost')
-        res.sendFile(path.join(staticPath, '/createpost/index.html'));
-    });
-app.get('/getposts/', checkLoggedIn, (_, resp) => {
-    const sql = db.prepare('SELECT posts.id, posts.userId, posts.content, posts.time, users.username as username ' + 
-        'FROM posts ' +
-        'INNER JOIN users ON posts.userId = users.id');
-    let posts = sql.all().map(post => ({
-        id: post.id,
-        sender: post.username,
-        text: post.content,
-        timestamp: post.time
-    }));
-    resp.send(posts);
+    console.log('createpost')
+    res.sendFile(path.join(staticPath, '/createpost/index.html'));
+});
+app.get('/getposts/', checkLoggedIn, async (_, resp) => {
+    try {
+        const result = await sql.query`SELECT posts.id, posts.userId, posts.content, posts.timeSendt, users.username as username 
+                                       FROM posts 
+                                       INNER JOIN users ON posts.userId = users.id`;
+        let posts = result.recordset.map(post => ({
+            id: post.id,
+            sender: post.username,
+            text: post.content,
+            timestamp: post.timeSendt
+        }));
+        resp.send(posts);
+    } catch (err) {
+        console.error("Failed to get posts: ", err);
+        resp.status(500).send("Failed to get posts");
+    }
 });
 
 app.set('view engine', 'ejs');
 
-app.get('/posts/', checkLoggedIn, (_, res) => {
-    const sql = db.prepare('SELECT posts.id, posts.userId, posts.content, posts.time, users.username as username ' + 
-        'FROM posts ' +
-        'INNER JOIN users ON posts.userId = users.id');
-    let posts = sql.all().map(post => ({
-        id: post.id,
-        sender: post.username,
-        text: post.content,
-        timestamp: post.time
-    }));
-    res.render('posts', { posts });
-    
+app.get('/posts/', checkLoggedIn, async (_, res) => {
+    try {
+        const result = await sql.query`SELECT posts.id, posts.userId, posts.content, posts.timeSendt, users.username as username 
+                                       FROM posts 
+                                       INNER JOIN users ON posts.userId = users.id`;
+        let posts = result.recordset.map(post => ({
+            id: post.id,
+            sender: post.username,
+            text: post.content,
+            timestamp: post.timeSendt
+        }));
+        res.render('posts', { posts });
+    } catch (err) {
+        console.error("Failed to get posts: ", err);
+        res.status(500).send("Failed to get posts");
+    }
 });
 
-
-app.get('/post/:id', checkLoggedIn, (req, res) => {
+app.get('/post/:id', checkLoggedIn, async (req, res) => {
     const postId = parseInt(req.params.id);
-    const sql = db.prepare('SELECT posts.id, posts.userId, posts.content, posts.time, users.username as username ' + 
-        'FROM posts ' +
-        'INNER JOIN users ON posts.userId = users.id ' +
-        'WHERE posts.id = ?');
-    let post = sql.get(postId);
-    let postDetails = {
-        id: postId,
-        sender: post.username,
-        content: post.content,
-        time: post.time
-    };
-    res.render('post', { post: postDetails });
+    try {
+        const result = await sql.query`SELECT posts.id, posts.userId, posts.content, posts.timeSendt, users.username as username 
+                                       FROM posts 
+                                       INNER JOIN users ON posts.userId = users.id 
+                                       WHERE posts.id = ${postId}`;
+        let post = result.recordset[0];
+        let postDetails = {
+            id: postId,
+            sender: post.username,
+            content: post.content,
+            timeSendt: post.timeSendt
+        };
+        res.render('post', { post: postDetails });
+    } catch (err) {
+        console.error("Failed to get post: ", err);
+        res.status(500).send("Failed to get post");
+    }
 });
-
-
 
 function escape_html(content) {
     return content.replace(/[&<>"'\/]/g, (char) => {
@@ -124,65 +158,68 @@ function checkLoggedIn(req, res, next) {
     }
 }
 
-function addMessage(userId, content, time) {
-    
-    str = escape_html(content);
-    console.log("THE THINGS: ", userId, str, time);
-    sql = db.prepare("INSERT INTO messages (userId, content, time) " +
-                         "values (?, ?, ?)");
-                         
-    const info = sql.run(userId, str, time)
-    
-    sql = db.prepare('SELECT messages.id, messages.userId, messages.content, messages.time, users.username as username ' + 
-        'FROM messages ' +
-        'INNER JOIN users ON messages.userId = users.id ' +
-        'WHERE messages.id = ?');
-    let rows = sql.all(info.lastInsertRowid)  
-
-    return rows[0]
-};
-
-function addPost(userId, content, time) {
-    const sql = db.prepare("INSERT INTO posts (userId, content, time) " +
-                         "values (?, ?, ?)");
-    const info = sql.run(userId, content, time);
-    const row = db.prepare('SELECT * FROM posts WHERE id = ?').get(info.lastInsertRowid);
-    console.log('row inserted', row);
-    return row;
+async function addMessage(userId, content, timeSendt) {
+    const str = escape_html(content);
+    try {
+        const result = await sql.query`INSERT INTO messages (userId, content, timeSendt) 
+                                       OUTPUT INSERTED.*
+                                       VALUES (${userId}, ${str}, ${timeSendt})`;
+        return result.recordset[0];
+    } catch (err) {
+        console.error("Failed to add message: ", err);
+        return null;
+    }
 }
 
-app.get('/getmessages/', checkLoggedIn, (req, resp) => {
+async function addPost(userId, content, timeSendt) {
+    try {
+        const result = await sql.query`INSERT INTO posts (userId, content, timeSendt) 
+                                       OUTPUT INSERTED.*
+                                       VALUES (${userId}, ${content}, ${timeSendt})`;
+        console.log('row inserted', result.recordset[0]);
+        return result.recordset[0];
+    } catch (err) {
+        console.error("Failed to add post: ", err);
+        return null;
+    }
+}
+
+app.get('/getmessages/', checkLoggedIn, async (req, resp) => {
     console.log('/getmessages/')
 
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.pageSize) || 10;
     const offset = (page - 1) * pageSize;
 
-    const sql = db.prepare('SELECT messages.id, messages.userId, messages.content, messages.time, users.username as username ' + 
-        'FROM messages ' +
-        'INNER JOIN users ON messages.userId = users.id ' +
-        'ORDER BY messages.id DESC ' + 
-        'LIMIT ? OFFSET ?');
-    let messages = sql.all(pageSize, offset);
-    resp.send(messages);
+    try {
+        const result = await sql.query`SELECT messages.id, messages.userId, messages.content, messages.timeSendt, users.username as username 
+                                       FROM messages 
+                                       INNER JOIN users ON messages.userId = users.id 
+                                       ORDER BY messages.id DESC 
+                                       OFFSET ${offset} ROWS 
+                                       FETCH NEXT ${pageSize} ROWS ONLY`;
+        resp.send(result.recordset);
+    } catch (err) {
+        console.error("Failed to get messages: ", err);
+        resp.status(500).send("Failed to get messages");
+    }
 });
 
-app.get('/getuser/', checkLoggedIn,  (req, resp) => {
+app.get('/getuser/', checkLoggedIn, (req, resp) => {
     console.log('/getuser/')
     resp.send(req.session.user)
 });
 
-
-app.post('/adduser', (req, res) => {
+app.post('/adduser', async (req, res) => {
     const { username, email, password } = req.body;
     // Validate email format and check if email already exists
     if (!checkEmailregex(email)) {
         return res.json({ error: 'Invalid email format.' });
-    } else if (checkEmailExists(email)) {
+    } else if (await checkEmailExists(email)) {
         return res.json({ error: 'Email already exists.' });
     } else {
         // Insert new user
-        const newUser = addUser(username, email, password);
+        const newUser = await addUser(username, email, password);
 
         if (!newUser) {
             return res.json({ error: 'Failed to register user.' });
@@ -190,41 +227,36 @@ app.post('/adduser', (req, res) => {
         res.redirect('/chat/');
     }
 });
-function addUser(username, email, password) {
 
-    password = bcrypt.hashSync(password, saltRounds);
-
-    const sql = db.prepare("INSERT INTO users (username, email, password) " +
-                         "values (?, ?, ?)");
-    const info = sql.run(username, email, password);
-    const row = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
-    console.log('row inserted', row);
-    return row;
+async function addUser(username, email, password) {
+    const hashedPassword = bcrypt.hashSync(password, saltRounds);
+    try {
+        const result = await sql.query`INSERT INTO users (username, email, password) 
+                                       OUTPUT INSERTED.*
+                                       VALUES (${username}, ${email}, ${hashedPassword})`;
+        console.log('row inserted', result.recordset[0]);
+        return result.recordset[0];
+    } catch (err) {
+        console.error("Failed to add user: ", err);
+        return null;
+    }
 }
+
 function checkEmailregex(email) {
     const emailRegex = /^[^\s@\.][^\s@]*@[^\s@]+\.[^\s@]+$/;
-    let result = emailRegex.test(email);
- 
-    if (!result) {
+    return emailRegex.test(email);
+}
+
+async function checkEmailExists(email) {
+    try {
+        const result = await sql.query`SELECT COUNT(*) as count FROM users WHERE email = ${email}`;
+        console.log("result.count", result.recordset[0].count);
+        return result.recordset[0].count > 0;
+    } catch (err) {
+        console.error("Failed to check email existence: ", err);
         return false;
     }
-    return true;
-
-
 }
-function checkEmailExists(email) {
-
-    let sql = db.prepare("select count(*) as count from users where email = ?")
-    let result = sql.get(email);
-    console.log("result.count", result)
-    if (result.count > 0) {
-        console.log("Email already exists")
-        return true;
-    }
-    return false;
-
-}
-
 
 app.post('/createpost', async (req, res) => {
     const { content } = req.body;
@@ -232,46 +264,44 @@ app.post('/createpost', async (req, res) => {
     console.log('user real:', req.session.user);
     const time = Date.now();
     console.log('Received post:', content);
-    addPost(user.id, content, time);
+    await addPost(user.id, content, time);
     res.redirect('/posts/');
-}
-);
-
-
-
-
+});
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-    
-    if (!user) {
-        return res.status(401).send('Ugyldig email eller passord');
-    }
-   
-    // Sjekk om passordet samsvarer med hash'en i databasen
-    const isMatch = await bcrypt.compare(password, user.password);
-    user.password = undefined;
-    if (isMatch) {
-        // Lagre innloggingsstatus i session
-        req.session.loggedIn = true;
-        req.session.email = user.email;
-        req.session.user = user;
-
-        //DETTE REDIRECTER TIL APP INDEX.HTML
-        if (user.isAdmin == 1) {
-            res.redirect('/chat/');
-        } 
+    try {
+        const result = await sql.query`SELECT * FROM users WHERE email = ${email}`;
+        const user = result.recordset[0];
         
-        else {
-            res.redirect('/chat/');
-
+        if (!user) {
+            return res.status(401).send('Ugyldig email eller passord');
         }
-        console.log("user " + user)
-        console.log(req.session)
-    } else {
-        return res.status(401).send('Ugyldig email eller passord');
+       
+        // Sjekk om passordet samsvarer med hash'en i databasen
+        const isMatch = await bcrypt.compare(password, user.password);
+        user.password = undefined;
+        if (isMatch) {
+            // Lagre innloggingsstatus i session
+            req.session.loggedIn = true;
+            req.session.email = user.email;
+            req.session.user = user;
+
+            //DETTE REDIRECTER TIL APP INDEX.HTML
+            if (user.isAdmin == 1) {
+                res.redirect('/chat/');
+            } else {
+                res.redirect('/chat/');
+            }
+            console.log("user " + user)
+            console.log(req.session)
+        } else {
+            return res.status(401).send('Ugyldig email eller passord');
+        }
+    } catch (err) {
+        console.error("Failed to login: ", err);
+        res.status(500).send("Failed to login");
     }
 });
 
@@ -286,18 +316,12 @@ app.use((req, res, next) => {
     next();
 });
 
-
-
 app.get('/navbar', (req, res) => {
     res.send(res.locals.navbar);
 });
 
-
-
-
 app.use(express.static(staticPath));
 const server = app.listen(PORT, () => console.log(`http://localhost:${PORT}`))
-
 
 const io = require('socket.io')(server)
 let socketsConnected = new Set();
@@ -305,7 +329,6 @@ io.on('connection', onConnection);
 io.engine.use(sessionMiddleware);
 
 function onConnection(socket) {
-    
     const session = socket.request.session;
     
     if (!session || !session.loggedIn) {
@@ -325,19 +348,17 @@ function onConnection(socket) {
     console.log('user:', session.user); 
 
     //får melding fra klient og sender videre til alle klienter
-    
     socket.on('message', async (data) => {
         try {
-            
             await rateLimiter.consume(socket.id);
-            str = escape_html(data);
+            const str = escape_html(data);
 
             console.log('Received message:', str);
             
             const time = Date.now();
             console.log('Time:', Date.now());
             console.log('Time:', time);
-            const messageAdd = addMessage(session.user.id, data, time);
+            const messageAdd = await addMessage(session.user.id, data, time);
             const messageSend = {
                 id: messageAdd.id,
                 userId: messageAdd.userId,
