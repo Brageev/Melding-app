@@ -3,10 +3,10 @@ const sql = require('mssql');
 const config = {
     user: 'Brage',
     password: 'Passord01',
-    server: 'meldingserver.database.windows.net',
-    database: 'meldingdb',
+    server: 'meldingappserver.database.windows.net',
+    database: 'meldingDB',
     options: {
-        encrypt: true, // Required for Azure
+        encrypt: true,
         enableArithAbort: true
     }
 };
@@ -26,7 +26,7 @@ const path = require('path')
 const express = require('express')
 const app = express()
 const session = require('express-session')
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 443
 const bcrypt = require('bcrypt')
 const staticPath = path.join(__dirname, 'public');
 const viewsPath = path.join(__dirname, 'views');
