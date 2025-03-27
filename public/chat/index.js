@@ -36,13 +36,13 @@ messageForm.addEventListener('submit', (e) => {
     const str = escape_html(message);
     socket.emit('message', message);
     messageInput.value = '';
-    const time = new Date();
+    const timeSendt = new Date();
 
     showMessages(
         [{
             username: userData.username,
             content: str,
-            time: time
+            timeSendt: timeSendt
         }]
     );
 });
@@ -109,7 +109,7 @@ async function fetchMessages(messageContainer, page = 0, pageSize = 20) {
         const fragment = document.createDocumentFragment();
         data.reverse().forEach((message) => {
             const messageElement = document.createElement('div');
-            const messageTime = new Date(message.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+            const messageTime = new Date(parseInt(message.timeSendt)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
             messageElement.classList.add('message');
             messageElement.classList.add(message.username === userData.username ? 'blue-bg' : 'gray-bg');
             messageElement.innerHTML = `
@@ -145,7 +145,7 @@ function showMessages(messages) {
     const currentScrollTop = messageContainer.scrollTop;
     messages.forEach((message) => {
         console.log(message);
-        const messageTime = new Date(message.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        const messageTime = new Date(message.timeSendt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
         messageElement.classList.add(message.username === userData.username ? 'blue-bg' : 'gray-bg');
