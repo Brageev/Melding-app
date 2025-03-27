@@ -70,37 +70,23 @@ app.get('/createpost/', checkLoggedIn, (_, res) => {
     console.log('createpost')
     res.sendFile(path.join(staticPath, '/createpost/index.html'));
 });
-app.get('/getposts/', checkLoggedIn, async (_, resp) => {
-    try {
-        const result = await sql.query`SELECT posts.id, posts.userId, posts.content, posts.timeSendt, users.username as username 
-                                       FROM posts 
-                                       INNER JOIN users ON posts.userId = users.id`;
-        let posts = result.recordset.map(post => ({
-            id: post.id,
-            sender: post.username,
-            text: post.content,
-            timestamp: post.timeSendt
-        }));
-        resp.send(posts);
-    } catch (err) {
-        console.error("Failed to get posts: ", err);
-        resp.status(500).send("Failed to get posts");
-    }
-});
 
 app.set('view engine', 'ejs');
 
 app.get('/posts/', checkLoggedIn, async (_, res) => {
     try {
-        const result = await sql.query`SELECT posts.id, posts.userId, posts.content, posts.timeSendt, users.username as username 
-                                       FROM posts 
-                                       INNER JOIN users ON posts.userId = users.id`;
+        const result = await sql.query(`
+            SELECT posts.id, posts.userId, posts.content, posts.timeSendt, users.username as username 
+            FROM posts 
+            INNER JOIN users ON posts.userId = users.id
+        `);
         let posts = result.recordset.map(post => ({
             id: post.id,
             sender: post.username,
             text: post.content,
             timestamp: post.timeSendt
         }));
+        
         res.render('posts', { posts });
     } catch (err) {
         console.error("Failed to get posts: ", err);
