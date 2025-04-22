@@ -4,7 +4,7 @@ const path = require('path')
 const express = require('express')
 const app = express()
 const session = require('express-session')
-const PORT = process.env.PORT || 80
+const PORT = process.env.PORT || 3000
 const bcrypt = require('bcrypt')
 const staticPath = path.join(__dirname, 'public');
 const viewsPath = path.join(__dirname, 'views');
@@ -92,6 +92,39 @@ app.get('/post/:id', checkLoggedIn, (req, res) => {
     };
     res.render('post', { post: postDetails });
 });
+
+
+app.get('/groupchat/:id', checkLoggedIn, (req, res) => {
+    const groupchatId = parseInt(req.params.id);
+    console.log("groupchatId", groupchatId);
+    const userId = req.session.user.id; 
+
+    const membershipSql = `SELECT COUNT(*) AS count FROM group_members WHERE group_id = ? AND user_id = ?`;
+
+    try {
+        const row = db.prepare(membershipSql).get(groupchatId, userId);
+        if (row.count === 0) {
+            return res.status(403).send("Forbidden: You are not a member of this group.");
+        }
+
+        const groupchat = db.prepare('SELECT * FROM groups WHERE id = ?').get(groupchatId);
+        if (!groupchat) {
+            return res.status(404).send("Group chat not found");
+        }
+
+        let groupchatDetails = {
+            id: groupchat.id,
+            name: groupchat.name,
+        };
+
+        res.render('groupchat', { groupchat: groupchatDetails });
+    } catch (err) {
+        console.error("Database error:", err);
+        return res.status(500).send("Internal Server Error");
+    }
+});
+
+
 
 
 

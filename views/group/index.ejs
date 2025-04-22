@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="../style.css">
-    
+
 </head>
 <body>
-
-    
     
     <div class="container-chat">
         <div class="sidebar-container" id="sidebar-container">
             <div class="user-info" id ="user-info">
         
         
+            </div>
+            <div>
+                <div class="group-id"><%= groupchat.id %></div>
+                <div class="group-name"><%= groupchat.name %></div>
             </div>
 
             
@@ -36,8 +38,10 @@
         </div>
             
     </div>
-    <script src="../socket.io/socket.io.js"></script>
-    <script src="./index.js"></script>
 
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/posts/index.js"></script>
+    
 </body>
 </html>
