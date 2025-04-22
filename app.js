@@ -92,6 +92,7 @@ app.get('/post/:id', checkLoggedIn, (req, res) => {
     };
     res.render('post', { post: postDetails });
 });
+//h
 
 
 app.get('/groupchat/:id', checkLoggedIn, (req, res) => {
